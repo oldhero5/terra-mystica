@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+
+    /* Terra Mystica Midnight Aurora Theme */
+    --primary: 280 100% 70%;           /* Aurora Purple */
+    --primary-foreground: 210 40% 98%; /* Off-White */
+    --secondary: 160 100% 50%;         /* Aurora Green */
+    --secondary-foreground: 210 40% 98%;
+    --accent: 190 90% 50%;             /* Aurora Teal */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+  }
+
+  .dark {
+    /* Dark theme - Midnight Aurora */
+    --background: 230 40% 10%;         /* Deep Blue-Black */
+    --foreground: 210 40% 98%;         /* Off-White */
+    --card: 230 35% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 230 35% 12%;
+    --popover-foreground: 210 40% 98%;
+    --muted: 230 30% 15%;
+    --muted-foreground: 215 20% 65%;
+    --border: 230 25% 18%;
+    --input: 230 25% 18%;
+    --ring: 280 100% 70%;
+
+    /* Keep the same vibrant colors for dark mode */
+    --primary: 280 100% 70%;           /* Aurora Purple */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 160 100% 50%;         /* Aurora Green */
+    --secondary-foreground: 210 40% 98%;
+    --accent: 190 90% 50%;             /* Aurora Teal */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-attachment: fixed;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent/50 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent/70;
+  }
+}
+
+@layer components {
+  /* Aurora background effect */
+  .aurora-bg {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .aurora-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+      ellipse 80% 50% at 50% -20%,
+      hsl(280, 100%, 70%, 0.3),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 50%,
+      hsl(190, 90%, 50%, 0.3),
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 20% 80%,
+      hsl(160, 100%, 50%, 0.3),
+      transparent 50%
+    );
+    animation: aurora-flow 20s ease-in-out infinite;
+    pointer-events: none;
+  }
+  
+  /* Glassmorphism effect */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent;
+  }
+  
+  /* Button variants */
+  .btn-aurora {
+    @apply bg-gradient-to-r from-primary via-accent to-secondary text-primary-foreground;
+    @apply shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply hover:scale-105 active:scale-95;
+  }
+  
+  /* Card hover effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+    @apply hover:shadow-primary/25;
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .animate-aurora {
+    animation: aurora-flow 20s ease-in-out infinite;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  /* Custom focus styles */
+  .focus-aurora {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50;
+  }
+}

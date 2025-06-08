@@ -1,0 +1,232 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    platform: linux/arm64
+    container_name: terra-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-terra_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password}
+      POSTGRES_DB: ${POSTGRES_DB:-terra_mystica}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-terra_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - terra-network
+
+  # Redis for Celery
+  redis:
+    image: redis:7-alpine
+    platform: linux/arm64
+    container_name: terra-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - terra-network
+
+  # OpenSearch for search and analytics
+  opensearch:
+    image: opensearchproject/opensearch:2.8.0
+    platform: linux/arm64
+    container_name: terra-opensearch
+    environment:
+      - cluster.name=terra-cluster
+      - node.name=terra-node
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - terra-network
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      platforms:
+        - linux/arm64
+    container_name: terra-backend
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-terra_user}:${POSTGRES_PASSWORD:-change_this_password}@postgres:5432/${POSTGRES_DB:-terra_mystica}
+      - REDIS_URL=redis://redis:6379/0
+      - OPENSEARCH_HOST=opensearch
+      - OPENSEARCH_PORT=9200
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./models:/app/models
+      - backend_cache:/app/.cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - terra-network
+    # GPU support for ML inference (comment out if no GPU)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      platforms:
+        - linux/arm64
+    container_name: terra-celery-worker
+    command: celery -A app.core.celery worker --loglevel=info --concurrency=2
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-terra_user}:${POSTGRES_PASSWORD:-change_this_password}@postgres:5432/${POSTGRES_DB:-terra_mystica}
+      - REDIS_URL=redis://redis:6379/0
+      - OPENSEARCH_HOST=opensearch
+      - OPENSEARCH_PORT=9200
+      - ENVIRONMENT=development
+    volumes:
+      - ./backend:/app
+      - ./models:/app/models
+      - backend_cache:/app/.cache
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    networks:
+      - terra-network
+    # GPU support for ML inference (comment out if no GPU)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Celery Beat (Scheduler)
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      platforms:
+        - linux/arm64
+    container_name: terra-celery-beat
+    command: celery -A app.core.celery beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-terra_user}:${POSTGRES_PASSWORD:-change_this_password}@postgres:5432/${POSTGRES_DB:-terra_mystica}
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=development
+    volumes:
+      - ./backend:/app
+      - celery_beat_data:/app/celerybeat-schedule
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    networks:
+      - terra-network
+
+  # Flower (Celery Monitoring)
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      platforms:
+        - linux/arm64
+    container_name: terra-flower
+    command: celery -A app.core.celery flower --port=5555
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    networks:
+      - terra-network
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      platforms:
+        - linux/arm64
+    container_name: terra-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - terra-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  opensearch_data:
+  backend_cache:
+  celery_beat_data:
+
+networks:
+  terra-network:
+    driver: bridge

@@ -1,0 +1,124 @@
+repos:
+  # Python hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: detect-private-key
+
+  # Python formatting with Black
+  - repo: https://github.com/psf/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        files: '^backend/.*\.py$'
+
+  # Python import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+        files: '^backend/.*\.py$'
+
+  # Python linting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: '^backend/.*\.py$'
+
+  # Python type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.1
+    hooks:
+      - id: mypy
+        files: '^backend/.*\.py$'
+        additional_dependencies: [types-all]
+
+  # Python security scanning with Bandit
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: ["-c", "backend/pyproject.toml"]
+        files: '^backend/.*\.py$'
+        exclude: '^backend/tests/.*\.py$'
+
+  # Python dependency security check
+  - repo: https://github.com/pyupio/safety
+    rev: 2.3.4
+    hooks:
+      - id: safety
+        files: '^backend/.*requirements.*\.txt$'
+
+  # JavaScript/TypeScript formatting with Prettier
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        files: '^frontend/.*\.(js|jsx|ts|tsx|json|css|md|yml|yaml)$'
+        exclude: '^frontend/(node_modules|\.next|out)/'
+
+  # JavaScript/TypeScript linting with ESLint
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.54.0
+    hooks:
+      - id: eslint
+        files: '^frontend/.*\.(js|jsx|ts|tsx)$'
+        exclude: '^frontend/(node_modules|\.next|out)/'
+        additional_dependencies:
+          - eslint@8.54.0
+          - eslint-config-next@14.0.3
+          - '@typescript-eslint/eslint-plugin@6.12.0'
+          - '@typescript-eslint/parser@6.12.0'
+          - typescript@5.3.2
+
+  # Conventional commit messages
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert]
+
+  # Docker linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        files: 'Dockerfile.*'
+
+  # Secrets detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: '^\.secrets\.baseline$'
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint.yaml]
+
+  # Terraform formatting (for later infrastructure setup)
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.83.6
+    hooks:
+      - id: terraform_fmt
+        files: '^infrastructure/.*\.tf$'
+      - id: terraform_validate
+        files: '^infrastructure/.*\.tf$'
