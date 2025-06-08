@@ -3,7 +3,8 @@ Application configuration settings
 """
 
 from typing import List, Union
-from pydantic import AnyHttpUrl, BaseSettings, validator
+from pydantic import AnyHttpUrl, field_validator
+from pydantic_settings import BaseSettings
 import os
 
 
@@ -44,7 +45,8 @@ class Settings(BaseSettings):
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
@@ -53,13 +55,14 @@ class Settings(BaseSettings):
         raise ValueError(v)
     
     # ML Configuration
-    GEOCL IP_MODEL_PATH: str = "/app/models/geocl ip"
+    GEOCLIP_MODEL_PATH: str = "/app/models/geoclip"
     MODEL_CACHE_SIZE: int = 1
     ENABLE_GPU: bool = True
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": True
+    }
 
 
 settings = Settings()

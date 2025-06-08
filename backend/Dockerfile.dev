@@ -22,11 +22,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock* ./
 
 # Install Python dependencies using UV
-RUN uv venv .venv
-RUN uv pip install -r pyproject.toml
-
-# Activate virtual environment
-ENV PATH="/app/.venv/bin:$PATH"
+RUN uv pip install --system fastapi uvicorn[standard] pydantic pydantic-settings structlog celery redis flower
 
 # Copy application code
 COPY . .

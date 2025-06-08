@@ -1,16 +1,12 @@
-# Override file for development without GPU
-# Use: docker-compose -f docker-compose.yml -f docker-compose.override.yml up
+# Override file for development (CPU-only)
+# This file is used automatically by docker-compose
 version: '3.8'
 
 services:
   backend:
-    deploy:
-      resources: {}
     environment:
       - ENABLE_GPU=false
 
   celery-worker:
-    deploy:
-      resources: {}
     environment:
       - ENABLE_GPU=false
