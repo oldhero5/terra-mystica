@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terra-backend
+  namespace: terra-mystica
+  labels:
+    app: terra-backend
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: terra-backend
+  template:
+    metadata:
+      labels:
+        app: terra-backend
+        component: backend
+    spec:
+      containers:
+      - name: backend
+        image: terra-mystica-backend:latest
+        imagePullPolicy: Never  # Use local image for testing
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://terra_user:change_this_password@postgres:5432/terra_mystica"
+        - name: REDIS_URL
+          value: "redis://redis:6379/0"
+        - name: OPENSEARCH_HOST
+          value: "opensearch"
+        - name: OPENSEARCH_PORT
+          value: "9200"
+        - name: ENVIRONMENT
+          value: "development"
+        - name: DEBUG
+          value: "true"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: ENABLE_GPU
+          value: "false"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: terra-backend
+  namespace: terra-mystica
+  labels:
+    app: terra-backend
+spec:
+  selector:
+    app: terra-backend
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP

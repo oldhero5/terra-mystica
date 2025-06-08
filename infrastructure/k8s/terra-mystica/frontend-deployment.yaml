@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terra-frontend
+  namespace: terra-mystica
+  labels:
+    app: terra-frontend
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: terra-frontend
+  template:
+    metadata:
+      labels:
+        app: terra-frontend
+        component: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: terra-mystica-frontend:latest
+        imagePullPolicy: Never  # Use local image for testing
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://terra-backend:8000"
+        - name: NODE_ENV
+          value: "development"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: terra-frontend
+  namespace: terra-mystica
+  labels:
+    app: terra-frontend
+spec:
+  selector:
+    app: terra-frontend
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+  type: ClusterIP

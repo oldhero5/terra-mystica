@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: terra-mystica
+  namespace: argocd
+  labels:
+    app: terra-mystica
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/oldhero5/terra-mystica.git
+    targetRevision: HEAD
+    path: infrastructure/k8s/terra-mystica
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: terra-mystica
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
