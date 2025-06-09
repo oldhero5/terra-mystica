@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Terra Mystica is a production-ready web application that uses state-of-the-art AI/ML techniques to identify the geographic location of outdoor images within 50-meter accuracy. The system combines multiple deep learning approaches including GeoCLIP, visual landmark recognition, and terrain matching to provide accurate geolocation with confidence scores.
+Terra Mystica is a production-ready web application that uses state-of-the-art AI/ML techniques to identify the geographic location of outdoor images within 50-meter accuracy. The system leverages CrewAI multi-agent framework with GPT-4o-mini as the core reasoning engine, deploying specialized agents for comprehensive geolocation analysis with confidence scores.
 
 ## Architecture
 
@@ -18,7 +18,8 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 ### Backend (Python + FastAPI)
 - **Framework**: FastAPI with async support
 - **Package Manager**: UV for dependency management
-- **ML Models**: GeoCLIP as primary, with fallback methods
+- **ML Framework**: CrewAI multi-agent system with GPT-4o-mini
+- **MCP Integration**: Model Context Protocol for external data access
 - **Task Queue**: Celery with Redis for async processing
 - **WebSockets**: For real-time processing updates
 - **Storage**: S3 for images, OpenSearch for results indexing
@@ -28,7 +29,7 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 - **Cloud**: AWS (EC2 with GPU, S3, OpenSearch Service)
 - **CI/CD**: ArgoCD for GitOps deployment
 - **Monitoring**: Prometheus + Grafana
-- **GPU Support**: NVIDIA CUDA for model inference
+- **AI Integration**: OpenAI API for GPT-4o-mini reasoning engine
 
 ## Key Features
 
@@ -102,7 +103,7 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 ### Next Priority Issues 📋
 - **Issue #5**: Authentication System Implementation (JWT, refresh tokens)
 - **Issue #6**: Image Upload and S3 Integration (file upload, WebSocket progress)
-- **Issue #8**: GeoCLIP Model Integration (ML inference pipeline)
+- **Issue #8**: CrewAI Multi-Agent Geolocation System Integration (ML inference pipeline)
 - **Issue #12**: Authentication UI Implementation (login/register forms)
 
 ### Development Status by Epic
@@ -118,10 +119,11 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 - ⏳ Image Upload and S3 Integration (Issue #6)
 - ⏳ OpenSearch Integration Layer (Issue #7)
 
-#### Epic 3: ML Pipeline Implementation (0/3 completed)
-- ⏳ GeoCLIP Model Integration (Issue #8)
-- ⏳ Secondary Geolocation Methods (Issue #9)
+#### Epic 3: CrewAI Multi-Agent Pipeline Implementation (0/4 completed)
+- ⏳ CrewAI Multi-Agent Geolocation System Integration (Issue #8)
+- ⏳ CrewAI Agent Specialization and Tool Integration (Issue #9)
 - ⏳ Celery Task Queue Setup (Issue #10)
+- ⏳ CrewAI Framework Setup and Agent Orchestration (Issue #25)
 
 #### Epic 4: Frontend Development (1/6 completed)
 - ✅ Next.js with Midnight Aurora Theme
@@ -204,28 +206,31 @@ complete    <- { "type": "result", "data": {...} }
 error       <- { "type": "error", "message": "..." }
 ```
 
-## ML Pipeline
+## CrewAI Multi-Agent Pipeline
 
 1. **Image Preprocessing**
    - EXIF data extraction
    - Resolution normalization
    - Feature extraction
 
-2. **Primary Model (GeoCLIP)**
-   - Global location prediction
-   - Confidence scoring
-   - Top-k results generation
+2. **Agent Orchestration (CrewAI + GPT-4o-mini)**
+   - Geographic Analyst Agent: Primary location reasoning
+   - Visual Analysis Agent: Image feature extraction and landmarks
+   - Environmental Agent: Terrain, vegetation, climate analysis
+   - Cultural Context Agent: Architecture, signage, cultural markers
+   - Validation Agent: Cross-reference and confidence scoring
+   - Research Agent: External data gathering via MCP tools
 
-3. **Secondary Methods**
-   - Landmark detection (urban)
-   - Terrain matching (rural)
-   - Sun position analysis
-   - Vegetation patterns
+3. **MCP Tool Integration**
+   - External geographic databases
+   - Weather and climate APIs
+   - Satellite imagery services
+   - Cultural and historical databases
 
 4. **Result Aggregation**
-   - Weighted ensemble
-   - Confidence calibration
-   - Location refinement
+   - Multi-agent consensus building
+   - Confidence calibration across agents
+   - Location refinement through agent collaboration
 
 ## Performance Targets
 
