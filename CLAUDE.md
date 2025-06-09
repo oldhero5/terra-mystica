@@ -91,20 +91,21 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 ## Project Status
 
 **Repository**: https://github.com/oldhero5/terra-mystica  
-**Current Phase**: Foundation Setup  
-**Last Updated**: December 2024
+**Current Phase**: Backend Core Development  
+**Last Updated**: June 2025
 
 ### Completed Issues ✅
 - **Issue #1**: Docker Development Environment Setup - ARM64 support, all services configured
 - **Issue #2**: Pre-commit Hooks and Code Quality Setup - Full linting, formatting, security scanning
 - **Issue #4**: FastAPI Application Scaffold - Complete backend structure with UV, health checks
+- **Issue #5**: Authentication System Implementation - JWT tokens, user management, API keys
 - **Issue #11**: Next.js Application Setup with Theme System - Midnight Aurora theme, responsive design
 
 ### Next Priority Issues 📋
-- **Issue #5**: Authentication System Implementation (JWT, refresh tokens)
 - **Issue #6**: Image Upload and S3 Integration (file upload, WebSocket progress)
-- **Issue #8**: CrewAI Multi-Agent Geolocation System Integration (ML inference pipeline)
 - **Issue #12**: Authentication UI Implementation (login/register forms)
+- **Issue #8**: CrewAI Multi-Agent Geolocation System Integration (ML inference pipeline)
+- **Issue #25**: CrewAI Framework Setup and Agent Orchestration
 
 ### Development Status by Epic
 
@@ -113,9 +114,9 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 - ✅ Pre-commit hooks and code quality
 - ⏳ AWS Infrastructure Terraform Setup (Issue #3)
 
-#### Epic 2: Backend Core Development (1/4 completed)
+#### Epic 2: Backend Core Development (2/4 completed)
 - ✅ FastAPI Application Scaffold
-- ⏳ Authentication System (Issue #5)
+- ✅ Authentication System (Issue #5)
 - ⏳ Image Upload and S3 Integration (Issue #6)
 - ⏳ OpenSearch Integration Layer (Issue #7)
 
@@ -138,8 +139,8 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 - ⏳ API and Unit Testing (Issue #18)
 - ⏳ ML Model Accuracy Benchmarking (Issue #19)
 
-#### Epic 6: Deployment & Operations (0/3 completed)
-- ⏳ ArgoCD GitOps Setup (Issue #20)
+#### Epic 6: Deployment & Operations (1/3 completed)
+- ✅ ArgoCD GitOps Setup (Issue #20)
 - ⏳ Monitoring and Observability Stack (Issue #21)
 - ⏳ Production Readiness Checklist (Issue #22)
 
