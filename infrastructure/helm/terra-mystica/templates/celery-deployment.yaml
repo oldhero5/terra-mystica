@@ -1,0 +1,53 @@
+{{- if .Values.celery.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "terra-mystica.fullname" . }}-celery
+  labels:
+    {{- include "terra-mystica.celery.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.celery.autoscaling.enabled }}
+  replicas: {{ .Values.celery.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "terra-mystica.celery.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "terra-mystica.celery.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.security.podSecurityContext | nindent 8 }}
+      containers:
+        - name: celery
+          securityContext:
+            {{- toYaml .Values.security.securityContext | nindent 12 }}
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.celery.image.repository }}:{{ .Values.celery.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.celery.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.celery.command | nindent 12 }}
+          env:
+            {{- range $key, $value := .Values.backend.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: DATABASE_URL
+              value: {{ include "terra-mystica.database.url" . | quote }}
+            - name: REDIS_URL
+              value: {{ include "terra-mystica.redis.url" . | quote }}
+            {{- if .Values.opensearch.external.enabled }}
+            - name: OPENSEARCH_HOST
+              value: {{ .Values.opensearch.external.host | quote }}
+            - name: OPENSEARCH_PORT
+              value: {{ .Values.opensearch.external.port | quote }}
+            - name: OPENSEARCH_SCHEME
+              value: {{ .Values.opensearch.external.scheme | quote }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.celery.resources | nindent 12 }}
+{{- end }}

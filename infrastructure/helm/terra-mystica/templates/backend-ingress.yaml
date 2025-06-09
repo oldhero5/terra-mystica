@@ -1,0 +1,43 @@
+{{- if and .Values.backend.enabled .Values.backend.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "terra-mystica.fullname" . }}-backend
+  labels:
+    {{- include "terra-mystica.backend.labels" . | nindent 4 }}
+  {{- with .Values.backend.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.backend.ingress.className }}
+  ingressClassName: {{ .Values.backend.ingress.className }}
+  {{- end }}
+  {{- if .Values.backend.ingress.tls }}
+  tls:
+    {{- range .Values.backend.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.backend.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "terra-mystica.fullname" $ }}-backend
+                port:
+                  number: {{ $.Values.backend.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}

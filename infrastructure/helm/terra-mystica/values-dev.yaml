@@ -1,0 +1,143 @@
+# Development environment values for terra-mystica
+# This file overrides values.yaml for dev deployment
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+app:
+  environment: development
+
+frontend:
+  replicaCount: 1
+  image:
+    pullPolicy: Never  # Use local images for dev
+    tag: latest
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    hosts:
+      - host: terra-dev.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []  # No TLS for local dev
+  
+  env:
+    NEXT_PUBLIC_API_URL: "http://terra-api-dev.local"
+    NEXT_PUBLIC_MAPBOX_TOKEN: ""  # Set via external secret or manually
+    NODE_ENV: development
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  
+  autoscaling:
+    enabled: false
+
+backend:
+  replicaCount: 1
+  image:
+    pullPolicy: Never  # Use local images for dev
+    tag: latest
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    hosts:
+      - host: terra-api-dev.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []  # No TLS for local dev
+  
+  env:
+    ENVIRONMENT: development
+    DEBUG: "true"
+    LOG_LEVEL: DEBUG
+    ENABLE_GPU: "false"
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: false
+
+celery:
+  replicaCount: 1
+  image:
+    pullPolicy: Never
+    tag: latest
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: false
+
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "dev_password"
+    username: "terra_user"
+    password: "dev_password"
+    database: "terra_mystica"
+  
+  primary:
+    persistence:
+      enabled: false  # Use ephemeral storage for dev
+    
+    resources:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  
+  master:
+    persistence:
+      enabled: false  # Use ephemeral storage for dev
+    
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 25m
+        memory: 64Mi
+
+opensearch:
+  enabled: false
+  external:
+    enabled: false  # Disable OpenSearch for dev
+
+monitoring:
+  enabled: false
+
+externalSecrets:
+  enabled: false

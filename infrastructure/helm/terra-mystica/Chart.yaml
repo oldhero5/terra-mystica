@@ -1,0 +1,27 @@
+apiVersion: v2
+name: terra-mystica
+description: A Helm chart for Terra Mystica - AI-powered geolocation service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ai
+  - geolocation
+  - fastapi
+  - nextjs
+  - crewai
+home: https://github.com/oldhero5/terra-mystica
+sources:
+  - https://github.com/oldhero5/terra-mystica
+maintainers:
+  - name: Terra Mystica Team
+    url: https://github.com/oldhero5/terra-mystica
+dependencies:
+  - name: postgresql
+    version: "12.1.9"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "18.4.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
