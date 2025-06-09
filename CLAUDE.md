@@ -59,6 +59,37 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
    - RESTful API for integration
    - Webhook support for async results
 
+## Authentication System
+
+### Backend Authentication (FastAPI + JWT)
+- **JWT Tokens**: Access tokens (15 min) + refresh tokens (30 days)
+- **Password Security**: bcrypt hashing with salt
+- **User Management**: Registration, login, profile updates
+- **API Keys**: Secure key generation for programmatic access
+- **Session Management**: Automatic token refresh
+
+### Frontend Authentication (React Context)
+- **Auth Provider**: Global authentication state management
+- **Protected Routes**: Automatic redirect to login for unauthenticated users
+- **Token Storage**: Secure localStorage with automatic cleanup
+- **Form Validation**: Email format, password strength, confirmation matching
+
+### Authentication Endpoints
+```
+POST   /api/v1/auth/register    # User registration with auto-login
+POST   /api/v1/auth/login       # User authentication
+POST   /api/v1/auth/refresh     # Token refresh
+POST   /api/v1/auth/logout      # User logout
+GET    /api/v1/auth/me          # Get current user
+POST   /api/v1/auth/api-key     # Generate API key
+DELETE /api/v1/auth/api-key     # Revoke API key
+```
+
+### Frontend Pages
+- `/auth/login` - Login form with email/password
+- `/auth/register` - Registration with password strength indicator
+- `/dashboard` - User profile management and API key generation
+
 ## Theme Options
 
 ### 1. Midnight Aurora (Primary)
@@ -91,7 +122,7 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 ## Project Status
 
 **Repository**: https://github.com/oldhero5/terra-mystica  
-**Current Phase**: Backend Core Development  
+**Current Phase**: Frontend Development  
 **Last Updated**: June 2025
 
 ### Completed Issues ✅
@@ -100,10 +131,11 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 - **Issue #4**: FastAPI Application Scaffold - Complete backend structure with UV, health checks
 - **Issue #5**: Authentication System Implementation - JWT tokens, user management, API keys
 - **Issue #11**: Next.js Application Setup with Theme System - Midnight Aurora theme, responsive design
+- **Issue #12**: Authentication UI Implementation - Complete frontend auth with login, registration, profile management, API keys
 
 ### Next Priority Issues 📋
 - **Issue #6**: Image Upload and S3 Integration (file upload, WebSocket progress)
-- **Issue #12**: Authentication UI Implementation (login/register forms)
+- **Issue #13**: Image Upload Interface (frontend file upload with drag-and-drop)
 - **Issue #8**: CrewAI Multi-Agent Geolocation System Integration (ML inference pipeline)
 - **Issue #25**: CrewAI Framework Setup and Agent Orchestration
 
@@ -126,9 +158,9 @@ Terra Mystica is a production-ready web application that uses state-of-the-art A
 - ⏳ Celery Task Queue Setup (Issue #10)
 - ⏳ CrewAI Framework Setup and Agent Orchestration (Issue #25)
 
-#### Epic 4: Frontend Development (1/6 completed)
+#### Epic 4: Frontend Development (2/6 completed)
 - ✅ Next.js with Midnight Aurora Theme
-- ⏳ Authentication UI (Issue #12)
+- ✅ Authentication UI (Issue #12)
 - ⏳ Image Upload Interface (Issue #13)
 - ⏳ Interactive Map Component (Issue #14)
 - ⏳ Results Dashboard (Issue #15)
