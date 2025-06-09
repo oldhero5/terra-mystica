@@ -1,0 +1,226 @@
+# Default values for terra-mystica
+# This is a YAML-formatted file.
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Application configuration
+app:
+  name: terra-mystica
+  version: "1.0.0"
+  environment: production
+
+# Frontend configuration
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: terra-mystica-frontend
+    pullPolicy: IfNotPresent
+    tag: latest
+  
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+    annotations: {}
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - host: terra-mystica.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: terra-mystica-tls
+        hosts:
+          - terra-mystica.example.com
+  
+  env:
+    NEXT_PUBLIC_API_URL: "https://api.terra-mystica.example.com"
+    NEXT_PUBLIC_MAPBOX_TOKEN: ""
+    NODE_ENV: production
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+# Backend configuration
+backend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: terra-mystica-backend
+    pullPolicy: IfNotPresent
+    tag: latest
+  
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
+    annotations: {}
+  
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - host: api.terra-mystica.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: terra-mystica-api-tls
+        hosts:
+          - api.terra-mystica.example.com
+  
+  env:
+    ENVIRONMENT: production
+    DEBUG: "false"
+    LOG_LEVEL: INFO
+    ENABLE_GPU: "false"
+    # Database and Redis URLs will be set by templates based on dependencies
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+
+# Celery worker configuration
+celery:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: terra-mystica-backend
+    pullPolicy: IfNotPresent
+    tag: latest
+  
+  command:
+    - celery
+    - -A
+    - app.core.celery_app
+    - worker
+    - --loglevel=info
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+
+# PostgreSQL dependency configuration
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "change_this_password"
+    username: "terra_user"
+    password: "change_this_password"
+    database: "terra_mystica"
+  
+  image:
+    registry: docker.io
+    repository: postgis/postgis
+    tag: "15-3.3"
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+# Redis dependency configuration
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+    
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+
+# OpenSearch configuration (external)
+opensearch:
+  enabled: false
+  external:
+    enabled: true
+    host: "opensearch.example.com"
+    port: 443
+    scheme: https
+
+# Security configuration
+security:
+  podSecurityContext:
+    fsGroup: 1000
+  
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+
+# Monitoring and observability
+monitoring:
+  enabled: false
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+
+# External secrets (for production)
+externalSecrets:
+  enabled: false
+  secretStore:
+    name: aws-secrets-manager
+    kind: SecretStore
