@@ -2,9 +2,8 @@
 # This file overrides values.yaml for production deployment
 
 global:
-  imageRegistry: "your-registry.com/"  # Update with your container registry
-  imagePullSecrets:
-    - name: regcred
+  imageRegistry: ""  # Use local images for testing
+  imagePullSecrets: []
 
 app:
   environment: production
@@ -12,8 +11,8 @@ app:
 frontend:
   replicaCount: 3
   image:
-    pullPolicy: Always
-    tag: "stable"  # Use stable tags for production
+    pullPolicy: Never  # Use local images for testing
+    tag: "latest"
   
   ingress:
     enabled: true
@@ -55,8 +54,8 @@ frontend:
 backend:
   replicaCount: 5
   image:
-    pullPolicy: Always
-    tag: "stable"
+    pullPolicy: Never  # Use local images for testing
+    tag: "latest"
   
   ingress:
     enabled: true
@@ -99,8 +98,8 @@ backend:
 celery:
   replicaCount: 3
   image:
-    pullPolicy: Always
-    tag: "stable"
+    pullPolicy: Never  # Use local images for testing
+    tag: "latest"
   
   resources:
     limits:
