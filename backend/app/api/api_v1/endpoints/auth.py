@@ -26,7 +26,7 @@ from app.utils.auth import AuthUtils
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     user_create: UserCreate,
     db: Session = Depends(get_db)
@@ -75,7 +75,33 @@ def register_user(
     db.commit()
     db.refresh(db_user)
     
-    return db_user
+    # Create access token
+    access_token = AuthUtils.create_access_token(subject=db_user.id)
+    
+    # Create refresh token
+    refresh_token_value = AuthUtils.create_refresh_token()
+    refresh_token_hash = AuthUtils.hash_refresh_token(refresh_token_value)
+    
+    # Store refresh token in database
+    db_refresh_token = RefreshToken(
+        user_id=db_user.id,
+        token_hash=refresh_token_hash,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    )
+    db.add(db_refresh_token)
+    db.commit()
+    
+    # Update last login
+    db_user.last_login = datetime.now(timezone.utc)
+    db.commit()
+    
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token_value,
+        token_type="bearer",
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=UserResponse.model_validate(db_user)
+    )
 
 
 @router.post("/login", response_model=TokenResponse)
