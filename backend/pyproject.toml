@@ -42,6 +42,8 @@ dependencies = [
     "rich>=13.7.0",
     "fastmcp>=2.0.0",
     "mcp>=1.0.0",
+    "psycopg2-binary>=2.9.0",
+    "email-validator>=2.1.0",
 ]
 
 [project.optional-dependencies]
