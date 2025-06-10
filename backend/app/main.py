@@ -12,6 +12,12 @@ import structlog
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.api_v1.api import api_router
+from mcp.fastapi_integration import (
+    mcp_health, 
+    mcp_info, 
+    test_mcp_integration,
+    setup_mcp_integration
+)
 
 
 @asynccontextmanager
@@ -21,6 +27,14 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger = structlog.get_logger()
     logger.info("Terra Mystica API starting up", version="0.1.0")
+    
+    # Initialize MCP integration
+    try:
+        mcp_integration = setup_mcp_integration(app)
+        logger.info("MCP server integration initialized")
+    except Exception as e:
+        logger.error("Failed to initialize MCP integration", error=str(e))
+        # Continue without MCP if it fails
     
     yield
     
@@ -72,6 +86,24 @@ async def health_check():
     return {"status": "healthy", "service": "terra-mystica-api", "version": "0.1.0"}
 
 
+@app.get("/mcp/health")
+async def mcp_health_endpoint():
+    """MCP server health check endpoint"""
+    return await mcp_health()
+
+
+@app.get("/mcp/info")
+async def mcp_info_endpoint():
+    """MCP server information endpoint"""
+    return await mcp_info()
+
+
+@app.get("/mcp/test")
+async def mcp_test_endpoint():
+    """Test MCP server functionality"""
+    return await test_mcp_integration()
+
+
 @app.get("/")
 async def root():
     """Root endpoint"""
@@ -79,5 +111,10 @@ async def root():
         "message": "Terra Mystica API",
         "version": "0.1.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "mcp": {
+            "health": "/mcp/health",
+            "info": "/mcp/info",
+            "test": "/mcp/test"
+        }
     }

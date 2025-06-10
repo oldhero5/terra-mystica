@@ -11,6 +11,15 @@ from .auth import (
     ApiKeyResponse,
     ApiKeyCreate
 )
+from .image import (
+    ImageBase,
+    ImageUploadResponse,
+    ImageResponse,
+    ImageListResponse,
+    ImageProcessingStatus,
+    ThumbnailSizes,
+    UploadProgress
+)
 
 __all__ = [
     "UserCreate",
@@ -19,5 +28,12 @@ __all__ = [
     "TokenResponse",
     "RefreshTokenRequest",
     "ApiKeyResponse",
-    "ApiKeyCreate"
+    "ApiKeyCreate",
+    "ImageBase",
+    "ImageUploadResponse",
+    "ImageResponse",
+    "ImageListResponse",
+    "ImageProcessingStatus",
+    "ThumbnailSizes",
+    "UploadProgress"
 ]

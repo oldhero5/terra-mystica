@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     gcc \
     g++ \
+    libheif-dev \
+    libde265-dev \
+    libjpeg-dev \
+    libpng-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install UV package manager
@@ -21,38 +25,32 @@ WORKDIR /app
 # Copy application code
 COPY . .
 
-# Install Python dependencies using UV
-RUN uv pip install --system \
-    fastapi>=0.104.0 \
-    uvicorn[standard]>=0.24.0 \
-    pydantic>=2.5.0 \
-    pydantic-settings>=2.1.0 \
-    sqlalchemy>=2.0.23 \
-    alembic>=1.13.0 \
-    asyncpg>=0.29.0 \
-    redis>=5.0.1 \
-    celery>=5.3.4 \
-    boto3>=1.34.0 \
-    opensearch-py>=2.4.0 \
-    pillow>=10.1.0 \
-    httpx>=0.25.0 \
-    python-multipart>=0.0.6 \
-    python-jose[cryptography]>=3.3.0 \
-    passlib[bcrypt]>=1.7.4 \
-    bcrypt>=4.1.2 \
-    PyJWT>=2.8.0 \
-    python-dotenv>=1.0.0 \
-    structlog>=23.2.0 \
-    websockets>=12.0 \
-    aiofiles>=23.2.1 \
-    psycopg2-binary>=2.9.0 \
-    email-validator>=2.1.0
+# Copy pyproject.toml for dependencies
+COPY pyproject.toml .
+
+# Install Python dependencies using UV from pyproject.toml
+RUN uv pip install --system -e .
 
 # Create necessary directories
-RUN mkdir -p /app/models /app/.cache /app/logs
+RUN mkdir -p /app/models /app/.cache /app/logs /app/uploads/images /app/uploads/thumbnails /app/uploads/temp
 
-# Expose port
-EXPOSE 8000
+# Expose ports (FastAPI and MCP server)
+EXPOSE 8000 8001
+
+# Create MCP server startup script
+RUN echo '#!/bin/bash\n\
+# Start MCP server in background if enabled\n\
+if [ "$MCP_ENABLED" = "true" ]; then\n\
+    echo "Starting MCP server..."\n\
+    python -m mcp.cli serve --transport ${MCP_TRANSPORT:-stdio} --host ${MCP_HOST:-0.0.0.0} --port ${MCP_PORT:-8001} &\n\
+    MCP_PID=$!\n\
+    echo "MCP server started with PID $MCP_PID"\n\
+fi\n\
+\n\
+# Start FastAPI server\n\
+echo "Starting FastAPI server..."\n\
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload\n\
+' > /app/start_dev.sh && chmod +x /app/start_dev.sh
 
 # Command for development with hot reload
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["/app/start_dev.sh"]

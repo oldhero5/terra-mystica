@@ -28,3 +28,7 @@ def setup_logging() -> None:
         logger_factory=structlog.WriteLoggerFactory(),
         cache_logger_on_first_use=True,
     )
+
+
+# Create a logger instance
+logger = structlog.get_logger()

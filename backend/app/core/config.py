@@ -2,8 +2,8 @@
 Application configuration settings
 """
 
-from typing import List, Union
-from pydantic import AnyHttpUrl, field_validator
+from typing import List, Union, Optional
+from pydantic import AnyHttpUrl, field_validator, Field
 from pydantic_settings import BaseSettings
 import os
 
@@ -58,6 +58,19 @@ class Settings(BaseSettings):
     GEOCLIP_MODEL_PATH: str = "/app/models/geoclip"
     MODEL_CACHE_SIZE: int = 1
     ENABLE_GPU: bool = True
+    
+    # OpenAI Configuration
+    OPENAI_API_KEY: Optional[str] = Field(default=None)
+    
+    # CrewAI Configuration
+    CREWAI_LOG_LEVEL: str = Field(default="INFO")
+    CREWAI_AGENT_TIMEOUT: int = Field(default=120)
+    
+    # Storage Configuration
+    UPLOAD_DIR: str = Field(default="/app/uploads")
+    THUMBNAIL_DIR: str = Field(default="/app/thumbnails")
+    MAX_UPLOAD_SIZE: int = Field(default=10 * 1024 * 1024)  # 10MB
+    ALLOWED_EXTENSIONS: List[str] = Field(default=["jpg", "jpeg", "png", "webp", "gif", "bmp", "tiff"])
     
     model_config = {
         "env_file": ".env",
