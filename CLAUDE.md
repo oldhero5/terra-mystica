@@ -122,8 +122,8 @@ DELETE /api/v1/auth/api-key     # Revoke API key
 ## Project Status
 
 **Repository**: https://github.com/oldhero5/terra-mystica  
-**Current Phase**: Frontend Development  
-**Last Updated**: June 2025
+**Current Phase**: Image Upload & Processing Pipeline (Phase 3)  
+**Last Updated**: December 2024
 
 ### Completed Issues ✅
 - **Issue #1**: Docker Development Environment Setup - ARM64 support, all services configured
@@ -171,8 +171,8 @@ DELETE /api/v1/auth/api-key     # Revoke API key
 - ⏳ API and Unit Testing (Issue #18)
 - ⏳ ML Model Accuracy Benchmarking (Issue #19)
 
-#### Epic 6: Deployment & Operations (1/3 completed)
-- ✅ ArgoCD GitOps Setup (Issue #20)
+#### Epic 6: Deployment & Operations (0/3 completed)
+- ⏳ ArgoCD GitOps Setup (Issue #20) - *Status needs verification*
 - ⏳ Monitoring and Observability Stack (Issue #21)
 - ⏳ Production Readiness Checklist (Issue #22)
 

@@ -3,7 +3,7 @@ API v1 router configuration
 """
 
 from fastapi import APIRouter
-from app.api.api_v1.endpoints import health, auth, images
+from app.api.api_v1.endpoints import health, auth, images_s3 as images
 
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])

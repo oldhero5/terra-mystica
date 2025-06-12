@@ -72,6 +72,46 @@ services:
     networks:
       - terra-network
 
+  # MinIO for S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    platform: linux/arm64
+    container_name: terra-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Console UI
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - terra-network
+
+  # MinIO Client to create bucket on startup
+  minio-createbuckets:
+    image: minio/mc:latest
+    platform: linux/arm64
+    container_name: terra-minio-createbuckets
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/terra-mystica-images --ignore-existing;
+      /usr/bin/mc policy set public myminio/terra-mystica-images;
+      exit 0;
+      "
+    networks:
+      - terra-network
+
   # Backend API (FastAPI)
   backend:
     build:
@@ -88,8 +128,23 @@ services:
       - ENVIRONMENT=development
       - DEBUG=true
       - LOG_LEVEL=INFO
+      # S3/MinIO Configuration
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-minioadmin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_NAME=terra-mystica-images
+      - S3_ENDPOINT_URL=http://minio:9000
+      # MCP Server Configuration
+      - MCP_ENABLED=${MCP_ENABLED:-true}
+      - MCP_SERVER_NAME=Terra Mystica MCP Server
+      - MCP_TRANSPORT=${MCP_TRANSPORT:-sse}
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8001
+      - API_BASE_URL=http://backend:8000
+      - MCP_LOG_LEVEL=INFO
     ports:
-      - "8000:8000"
+      - "8080:8000"
+      - "8081:8001"  # MCP server port
     volumes:
       - ./backend:/app
       - ./models:/app/models
@@ -100,6 +155,8 @@ services:
       redis:
         condition: service_healthy
       opensearch:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -185,7 +242,7 @@ services:
         - linux/arm64
     container_name: terra-frontend
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
       - NODE_ENV=development
     ports:
       - "3000:3000"
@@ -207,6 +264,7 @@ volumes:
   postgres_data:
   redis_data:
   opensearch_data:
+  minio_data:
   backend_cache:
   celery_beat_data:
 
