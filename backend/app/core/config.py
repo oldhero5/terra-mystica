@@ -34,7 +34,8 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "us-west-2"
-    S3_BUCKET: str = "terra-mystica-images"
+    S3_BUCKET_NAME: str = "terra-mystica-images"
+    S3_ENDPOINT_URL: Optional[str] = None  # For LocalStack or MinIO testing
     
     # JWT Configuration
     JWT_SECRET_KEY: str = "your_jwt_secret_key_here_make_it_long_and_random"
@@ -46,7 +47,6 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]

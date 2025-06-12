@@ -35,6 +35,13 @@ class ImageResponse(ImageUploadResponse):
     thumbnail_small_path: Optional[str] = None
     thumbnail_medium_path: Optional[str] = None
     
+    # S3 URLs
+    s3_key: Optional[str] = None
+    s3_url: Optional[str] = None
+    thumbnail_small_url: Optional[str] = None
+    thumbnail_medium_url: Optional[str] = None
+    thumbnail_large_url: Optional[str] = None
+    
     # EXIF data
     exif_data: Optional[Dict[str, Any]] = None
     exif_latitude: Optional[float] = None
@@ -88,3 +95,11 @@ class UploadProgress(BaseModel):
     percentage: int = Field(ge=0, le=100)
     status: str = "uploading"  # uploading, processing, completed, failed
     message: Optional[str] = None
+
+
+class PresignedUploadResponse(BaseModel):
+    """Response with presigned S3 upload data"""
+    upload_url: str
+    fields: Dict[str, str]
+    key: str
+    expires_in: int

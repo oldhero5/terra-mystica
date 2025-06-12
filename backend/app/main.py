@@ -112,6 +112,7 @@ async def root():
         "version": "0.1.0",
         "docs": "/docs",
         "health": "/health",
+        "api": f"{settings.API_V1_STR}",
         "mcp": {
             "health": "/mcp/health",
             "info": "/mcp/info",

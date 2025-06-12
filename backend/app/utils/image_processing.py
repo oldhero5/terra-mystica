@@ -237,6 +237,56 @@ class ImageProcessor:
         except Exception as e:
             logger.error(f"Error getting image info: {str(e)}")
             return {}
-
-
-from io import BytesIO
+    
+    @staticmethod
+    def get_image_info_from_bytes(image_bytes: bytes) -> Dict[str, Any]:
+        """Get basic image information from bytes"""
+        try:
+            with Image.open(BytesIO(image_bytes)) as img:
+                return {
+                    'width': img.width,
+                    'height': img.height,
+                    'format': img.format,
+                    'mode': img.mode
+                }
+        except Exception as e:
+            logger.error(f"Error getting image info from bytes: {str(e)}")
+            return {}
+    
+    @staticmethod
+    def extract_exif_data_from_bytes(image_bytes: bytes) -> Dict[str, Any]:
+        """Extract EXIF data from image bytes"""
+        exif_data = {}
+        
+        try:
+            with Image.open(BytesIO(image_bytes)) as img:
+                # Get EXIF data if available
+                exif = img.getexif()
+                
+                if exif:
+                    # Process standard EXIF tags
+                    for tag_id, value in exif.items():
+                        tag = TAGS.get(tag_id, tag_id)
+                        exif_data[tag] = ImageProcessor._make_json_serializable(value)
+                    
+                    # Process GPS data
+                    if exif.get(34853):  # GPS IFD tag
+                        gps_data = {}
+                        for tag_id, value in exif.get_ifd(34853).items():
+                            tag = GPSTAGS.get(tag_id, tag_id)
+                            gps_data[tag] = ImageProcessor._make_json_serializable(value)
+                        
+                        # Convert GPS coordinates
+                        lat, lon, alt = ImageProcessor._convert_gps_coordinates(gps_data)
+                        if lat and lon:
+                            exif_data['gps_latitude'] = lat
+                            exif_data['gps_longitude'] = lon
+                            if alt:
+                                exif_data['gps_altitude'] = alt
+                        
+                        exif_data['gps_data'] = gps_data
+                
+        except Exception as e:
+            logger.error(f"Error extracting EXIF data from bytes: {str(e)}")
+        
+        return exif_data
