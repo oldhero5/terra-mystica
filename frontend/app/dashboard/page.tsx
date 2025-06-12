@@ -6,7 +6,7 @@ import { ApiKeyManager } from '@/components/auth/api-key-manager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
-import { LogOut, User, Key } from 'lucide-react';
+import { LogOut, User, Key, Upload, Map } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, logout, isLoading } = useAuth();
@@ -62,6 +62,37 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push('/upload')}>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <Upload className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Upload Images</h3>
+                    <p className="text-sm text-muted-foreground">Upload images to discover their locations</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="cursor-pointer hover:shadow-md transition-shadow opacity-50">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-accent/10 rounded-lg">
+                    <Map className="w-6 h-6 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">View Results</h3>
+                    <p className="text-sm text-muted-foreground">Browse your analyzed images</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Welcome Card */}
           <Card>
             <CardHeader>
