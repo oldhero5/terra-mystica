@@ -61,10 +61,15 @@ class Settings(BaseSettings):
     
     # OpenAI Configuration
     OPENAI_API_KEY: Optional[str] = Field(default=None)
+    OPENAI_MODEL: str = Field(default="gpt-4o-mini")
+    OPENAI_TEMPERATURE: float = Field(default=0.1)
+    OPENAI_MAX_TOKENS: int = Field(default=4000)
     
     # CrewAI Configuration
     CREWAI_LOG_LEVEL: str = Field(default="INFO")
     CREWAI_AGENT_TIMEOUT: int = Field(default=120)
+    CREWAI_MAX_ITERATIONS: int = Field(default=5)
+    CREWAI_VERBOSE: bool = Field(default=True)
     
     # Storage Configuration
     UPLOAD_DIR: str = Field(default="/app/uploads")

@@ -3,11 +3,13 @@ FastAPI dependency functions for authentication and database
 """
 
 from typing import Generator, Optional
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from app.core.config import settings
 from app.models.user import User
@@ -16,6 +18,10 @@ from app.utils.auth import AuthUtils
 # Database setup
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Async database setup
+async_engine = create_async_engine(settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"))
+AsyncSessionLocal = async_sessionmaker(async_engine, expire_on_commit=False)
 
 # Security
 security = HTTPBearer()
@@ -144,3 +150,22 @@ def get_current_user_or_api_key(
         pass
         
     return None
+
+
+@asynccontextmanager
+async def get_db_context():
+    """Async database context manager for background tasks"""
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
+async def get_async_db() -> AsyncSession:
+    """Async database dependency"""
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
