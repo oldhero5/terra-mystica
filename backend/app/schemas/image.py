@@ -103,3 +103,48 @@ class PresignedUploadResponse(BaseModel):
     fields: Dict[str, str]
     key: str
     expires_in: int
+
+
+class PredictionLocation(BaseModel):
+    """Individual location prediction"""
+    rank: int = Field(description="Ranking of this prediction (1=primary)")
+    latitude: float = Field(description="Latitude coordinate")
+    longitude: float = Field(description="Longitude coordinate")
+    confidence: float = Field(ge=0, le=1, description="Confidence score")
+    place_name: Optional[str] = Field(default=None, description="Human-readable place name")
+    country: Optional[str] = Field(default=None, description="Country name")
+    region: Optional[str] = Field(default=None, description="Region or state")
+    reasoning: str = Field(description="AI reasoning for this prediction")
+
+
+class ImagePrediction(BaseModel):
+    """Complete geolocation prediction for an image"""
+    image_id: str = Field(description="Image identifier")
+    
+    # Primary prediction
+    latitude: float = Field(description="Primary predicted latitude")
+    longitude: float = Field(description="Primary predicted longitude")
+    confidence: float = Field(ge=0, le=1, description="Primary confidence score")
+    place_name: str = Field(description="Primary place name")
+    country: str = Field(description="Primary country")
+    region: Optional[str] = Field(default=None, description="Primary region")
+    reasoning: str = Field(description="Primary reasoning")
+    
+    # Alternative predictions
+    alternative_locations: List[PredictionLocation] = Field(
+        default_factory=list, description="Alternative location predictions"
+    )
+    
+    # Additional data
+    features: Dict[str, Any] = Field(
+        default_factory=dict, description="Identified features and characteristics"
+    )
+    processing_time: float = Field(description="Processing time in seconds")
+    agent_insights: Dict[str, str] = Field(
+        default_factory=dict, description="Insights from individual agents"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Processing metadata"
+    )
+    
+    model_config = ConfigDict(from_attributes=True)

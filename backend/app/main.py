@@ -12,6 +12,7 @@ import structlog
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.api_v1.api import api_router
+from app.api.websocket import websocket_endpoint
 from mcp.fastapi_integration import (
     mcp_health, 
     mcp_info, 
@@ -73,6 +74,9 @@ def create_application() -> FastAPI:
 
     # Include API router
     app.include_router(api_router, prefix=settings.API_V1_STR)
+    
+    # Add WebSocket endpoint
+    app.add_api_websocket_route("/ws", websocket_endpoint)
 
     return app
 
